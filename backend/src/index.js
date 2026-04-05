@@ -1,25 +1,23 @@
 import dotenv from "dotenv";
+dotenv.config({
+  path: "./.env",
+});
+
 import mongoose from "mongoose";
 import { app } from "./app.js";
 
-dotenv.config({ path: "./.env" });
-
 const PORT = process.env.PORT || 8000;
 
-const connectDB = async () => {
-  try {
-    const conn = await mongoose.connect(process.env.MONGODB_URI, {
-      serverSelectionTimeoutMS: 5000, // fail fast if unreachable
-    });
-    console.log(`MongoDB connected: ${conn.connection.host}`);
-  } catch (error) {
-    console.error("❌ MongoDB connection error:", error.message);
-    process.exit(1); // exit so nodemon restarts cleanly
-  }
-};
+mongoose
+  .connect(process.env.MONGODB_URI)
+  .then(() => {
+    console.log("MongoDB connected:", mongoose.connection.host);
+    console.log("🌍 CORS ORIGIN:", process.env.CORS_ORIGIN);
 
-connectDB().then(() => {
-  app.listen(PORT, () => {
-    console.log(`⚙️  Server running on port ${PORT}`);
+    app.listen(PORT, () => {
+      console.log(`⚙️  Server running on port ${PORT}`);
+    });
+  })
+  .catch((error) => {
+    console.log("❌ MongoDB connection error:", error);
   });
-});

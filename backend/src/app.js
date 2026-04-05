@@ -6,12 +6,22 @@ import taskRouter from "./routes/task.routes.js";
 
 const app = express();
 
+const allowedOrigin = "http://localhost:5173";
+
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN,
+    origin: allowedOrigin,
     credentials: true,
+    methods: ["GET", "POST", "PATCH", "DELETE", "PUT", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
+
+// Extra safety for preflight requests
+// app.options("*", cors({
+//   origin: allowedOrigin,
+//   credentials: true,
+// }));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
