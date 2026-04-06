@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../services/api";
+import toast from "react-hot-toast";
 
 function Login() {
   const navigate = useNavigate();
@@ -17,21 +18,22 @@ function Login() {
     }));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+ const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    try {
-      const response = await api.post("/users/login", formData);
+  try {
+    const response = await api.post("/users/login", formData);
+      console.log(response.data);
 
-      localStorage.setItem("token", response.data.accessToken);
-      localStorage.setItem("user", JSON.stringify(response.data.user));
+   localStorage.setItem("token", response.data.accessToken);       
+    localStorage.setItem("user", JSON.stringify(response.data.user)); 
 
-      alert("Login successful!");
-      navigate("/dashboard");
-    } catch (error) {
-      alert(error.response?.data?.message || "Login failed");
-    }
-  };
+    toast.success("Login successful!");
+    navigate("/dashboard");
+  } catch (error) {
+    toast.error(error.response?.data?.message || "Login failed");
+  }
+};
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-100 px-4">
