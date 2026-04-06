@@ -18,18 +18,24 @@ function Login() {
     }));
   };
 
- const handleSubmit = async (e) => {
+const handleSubmit = async (e) => {
   e.preventDefault();
 
   try {
     const response = await api.post("/users/login", formData);
-      console.log(response.data);
 
-   localStorage.setItem("token", response.data.accessToken);       
-    localStorage.setItem("user", JSON.stringify(response.data.user)); 
+    localStorage.setItem("token", response.data.data.accessToken);
+    localStorage.setItem("user", JSON.stringify(response.data.data.user));
 
     toast.success("Login successful!");
-    navigate("/dashboard");
+
+    const loggedInUser = response.data.data.user;
+
+    if (loggedInUser.role === "admin") {
+      navigate("/admin/dashboard");
+    } else {
+      navigate("/dashboard");
+    }
   } catch (error) {
     toast.error(error.response?.data?.message || "Login failed");
   }

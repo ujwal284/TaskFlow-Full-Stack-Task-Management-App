@@ -1,18 +1,19 @@
 import { User } from "../models/user.model.js";
-import jwt from "jsonwebtoken";
 
 // Register user
 const registerUser = async (req, res) => {
   try {
     const { fullName, email, password } = req.body;
 
+    // Validation
     if (!fullName || !email || !password) {
       return res.status(400).json({
         success: false,
-        message: "All fields are required",
+        message: "Full name, email and password are required",
       });
     }
 
+    // Check existing user
     const existingUser = await User.findOne({ email });
 
     if (existingUser) {
@@ -22,7 +23,8 @@ const registerUser = async (req, res) => {
       });
     }
 
-    const user = await User.create({
+    // Create user
+    const createdUser = await User.create({
       fullName,
       email,
       password,
@@ -31,10 +33,13 @@ const registerUser = async (req, res) => {
     return res.status(201).json({
       success: true,
       message: "User registered successfully",
-      user: {
-        _id: user._id,
-        fullName: user.fullName,
-        email: user.email,
+      data: {
+        user: {
+          _id: createdUser._id,
+          fullName: createdUser.fullName,
+          email: createdUser.email,
+          role: createdUser.role,
+        },
       },
     });
   } catch (error) {
@@ -50,6 +55,7 @@ const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    // Validation
     if (!email || !password) {
       return res.status(400).json({
         success: false,
@@ -57,6 +63,7 @@ const loginUser = async (req, res) => {
       });
     }
 
+    // Check user
     const user = await User.findOne({ email });
 
     if (!user) {
@@ -66,6 +73,7 @@ const loginUser = async (req, res) => {
       });
     }
 
+    // Check password
     const isPasswordValid = await user.isPasswordCorrect(password);
 
     if (!isPasswordValid) {
@@ -75,6 +83,7 @@ const loginUser = async (req, res) => {
       });
     }
 
+    // Generate token
     const accessToken = user.generateAccessToken();
 
     const loggedInUser = await User.findById(user._id).select("-password");
@@ -90,8 +99,15 @@ const loginUser = async (req, res) => {
       .json({
         success: true,
         message: "Login successful",
-        accessToken,
-        user: loggedInUser,
+        data: {
+          accessToken,
+          user: {
+            _id: loggedInUser._id,
+            fullName: loggedInUser.fullName,
+            email: loggedInUser.email,
+            role: loggedInUser.role,
+          },
+        },
       });
   } catch (error) {
     return res.status(500).json({

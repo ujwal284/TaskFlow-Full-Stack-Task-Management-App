@@ -7,7 +7,14 @@ import TaskFilters from "../components/TaskFilters";
 import api from "../services/api";
 
 function Dashboard() {
-  const user = JSON.parse(localStorage.getItem("user"));
+  let user = null;
+
+try {
+  const storedUser = localStorage.getItem("user");
+  user = storedUser && storedUser !== "undefined" ? JSON.parse(storedUser) : null;
+} catch (error) {
+  user = null;
+}
 
   const [tasks, setTasks] = useState([]);
   const [stats, setStats] = useState({});

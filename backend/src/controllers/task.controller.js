@@ -168,7 +168,8 @@ const deleteTask = async (req, res) => {
   }
 };
 
-// get Task Stats
+
+// Get Task Stats
 const getTaskStats = async (req, res) => {
   try {
     const tasks = await Task.find({ createdBy: req.user._id });
@@ -178,7 +179,9 @@ const getTaskStats = async (req, res) => {
       todo: tasks.filter((task) => task.status === "todo").length,
       inProgress: tasks.filter((task) => task.status === "in-progress").length,
       done: tasks.filter((task) => task.status === "done").length,
-      highPriority: tasks.filter((task) => task.priority === "high").length,
+      high: tasks.filter((task) => task.priority === "high").length,
+      medium: tasks.filter((task) => task.priority === "medium").length,
+      low: tasks.filter((task) => task.priority === "low").length,
     };
 
     return res.status(200).json({

@@ -1,10 +1,18 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, NavLink } from "react-router-dom";
 import Modal from "../ui/Modal";
 
 function Sidebar() {
   const navigate = useNavigate();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+
+  let user = null;
+  try {
+    const storedUser = localStorage.getItem("user");
+    user = storedUser && storedUser !== "undefined" ? JSON.parse(storedUser) : null;
+  } catch (error) {
+    user = null;
+  }
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -12,27 +20,56 @@ function Sidebar() {
     navigate("/");
   };
 
+  const navLinkClass = ({ isActive }) =>
+    `text-left px-4 py-3 rounded-xl transition font-medium ${
+      isActive
+        ? "bg-zinc-800 text-white"
+        : "text-zinc-300 hover:bg-zinc-800 hover:text-white"
+    }`;
+
   return (
     <>
       <aside className="w-64 min-h-screen bg-zinc-950 text-white flex flex-col p-6 shadow-xl">
         <h1 className="text-2xl font-bold mb-10 tracking-wide">TaskFlow</h1>
 
         <nav className="flex flex-col gap-3">
-          <button className="text-left px-4 py-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 transition">
+          {/* ✅ User Routes — each points to its own path */}
+          <NavLink to="/dashboard" end className={navLinkClass}>
             Dashboard
-          </button>
+          </NavLink>
 
-          <button className="text-left px-4 py-3 rounded-xl hover:bg-zinc-800 transition">
+          <NavLink to="/tasks" className={navLinkClass}>
             Tasks
-          </button>
+          </NavLink>
 
-          <button className="text-left px-4 py-3 rounded-xl hover:bg-zinc-800 transition">
+          <NavLink to="/analytics" className={navLinkClass}>
             Analytics
-          </button>
+          </NavLink>
 
-          <button className="text-left px-4 py-3 rounded-xl hover:bg-zinc-800 transition">
+          <NavLink to="/settings" className={navLinkClass}>
             Settings
-          </button>
+          </NavLink>
+
+          {/* ✅ Admin Routes — only shown to admins */}
+          {user?.role === "admin" && (
+            <>
+              <div className="mt-6 mb-2 text-xs uppercase tracking-wider text-zinc-500 px-2">
+                Admin Panel
+              </div>
+
+              <NavLink to="/admin/dashboard" className={navLinkClass}>
+                Admin Dashboard
+              </NavLink>
+
+              <NavLink to="/admin/users" className={navLinkClass}>
+                Manage Users
+              </NavLink>
+
+              <NavLink to="/admin/tasks" className={navLinkClass}>
+                All Tasks
+              </NavLink>
+            </>
+          )}
         </nav>
 
         <div className="mt-auto pt-10">

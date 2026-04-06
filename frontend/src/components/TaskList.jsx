@@ -1,29 +1,39 @@
 import { useState } from "react";
 import api from "../services/api";
-import EditTaskModal from "./EditTaskModal";
 import toast from "react-hot-toast";
+import EditTaskModal from "./EditTaskModal";
+import ConfirmModal from "./ConfirmModal";
 
 function TaskList({ tasks, fetchTasks, fetchStats }) {
   const [selectedTask, setSelectedTask] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
 
-const handleDelete = async (id) => {
-  const confirmDelete = window.confirm("Are you sure you want to delete this task?");
-  if (!confirmDelete) return;
-
-  try {
-    await api.delete(`/tasks/${id}`);
-    fetchTasks();
-    fetchStats();
-    toast.success("Task deleted successfully!");
-  } catch (error) {
-    toast.error(error.response?.data?.message || "Failed to delete task");
-  }
-};
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [taskToDelete, setTaskToDelete] = useState(null);
 
   const openEditModal = (task) => {
     setSelectedTask(task);
     setShowEditModal(true);
+  };
+
+  const openDeleteModal = (task) => {
+    setTaskToDelete(task);
+    setShowDeleteModal(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!taskToDelete) return;
+
+    try {
+      await api.delete(`/tasks/${taskToDelete._id}`);
+      fetchTasks();
+      fetchStats();
+      toast.success("Task deleted successfully!");
+      setShowDeleteModal(false);
+      setTaskToDelete(null);
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to delete task");
+    }
   };
 
   const getStatusStyles = (status) => {
@@ -63,13 +73,6 @@ const handleDelete = async (id) => {
   return (
     <>
       <div className="bg-white rounded-2xl shadow-sm p-6">
-        <div className="flex items-center justify-between mb-5">
-          <h3 className="text-2xl font-bold text-slate-800">Your Tasks</h3>
-          <span className="text-sm bg-slate-100 text-slate-700 px-3 py-1.5 rounded-full">
-            {tasks.length} Task{tasks.length > 1 ? "s" : ""}
-          </span>
-        </div>
-
         <div className="space-y-5">
           {tasks.map((task) => (
             <div
@@ -116,7 +119,7 @@ const handleDelete = async (id) => {
                 </button>
 
                 <button
-                  onClick={() => handleDelete(task._id)}
+                  onClick={() => openDeleteModal(task)}
                   className="bg-red-500 hover:bg-red-600 text-white px-5 py-2.5 rounded-xl font-medium transition"
                 >
                   Delete
@@ -133,6 +136,20 @@ const handleDelete = async (id) => {
         task={selectedTask}
         fetchTasks={fetchTasks}
         fetchStats={fetchStats}
+      />
+
+      <ConfirmModal
+        isOpen={showDeleteModal}
+        onClose={() => {
+          setShowDeleteModal(false);
+          setTaskToDelete(null);
+        }}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Task"
+        message={`Are you sure you want to delete "${taskToDelete?.title}"? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        confirmColor="bg-red-500 hover:bg-red-600"
       />
     </>
   );
