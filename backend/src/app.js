@@ -7,27 +7,27 @@ import adminRouter from "./routes/admin.routes.js";
 
 const app = express();
 
-const allowedOrigin = "http://localhost:5173";
+// Allowed frontend URLs
+const allowedOrigins = [
+  "http://localhost:5173",
+  process.env.CORS_ORIGIN,
+].filter(Boolean);
 
+// CORS middleware
 app.use(
   cors({
-    origin: allowedOrigin,
+    origin: allowedOrigins,
     credentials: true,
-    methods: ["GET", "POST", "PATCH", "DELETE", "PUT", "OPTIONS"],
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
-
-// Extra safety for preflight requests
-// app.options("*", cors({
-//   origin: allowedOrigin,
-//   credentials: true,
-// }));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+// Health check route
 app.get("/", (req, res) => {
   res.send("TaskFlow API is running...");
 });
