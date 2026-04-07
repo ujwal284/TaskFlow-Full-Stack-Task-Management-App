@@ -1,23 +1,19 @@
 import dotenv from "dotenv";
+import connectDB from "./db/connectDB.js";
+import { app } from "./app.js";
+
 dotenv.config({
   path: "./.env",
 });
 
-import mongoose from "mongoose";
-import { app } from "./app.js";
-
 const PORT = process.env.PORT || 8000;
 
-mongoose
-  .connect(process.env.MONGODB_URI)
+connectDB()
   .then(() => {
-    console.log("MongoDB connected:", mongoose.connection.host);
-    console.log("🌍 CORS ORIGIN:", process.env.CORS_ORIGIN);
-
     app.listen(PORT, () => {
       console.log(`⚙️  Server running on port ${PORT}`);
     });
   })
   .catch((error) => {
-    console.log("❌ MongoDB connection error:", error);
+    console.log("MongoDB connection failed:", error);
   });
