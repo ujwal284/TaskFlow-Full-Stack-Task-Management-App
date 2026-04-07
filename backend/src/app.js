@@ -15,13 +15,14 @@ const allowedOrigins = [
 app.use(
   cors({
     origin: function (origin, callback) {
-      // allow requests with no origin (postman/mobile apps/etc.)
+      // Allow Postman / server-to-server / no-origin requests
       if (!origin) return callback(null, true);
 
       if (allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
 
+      console.log("Blocked by CORS:", origin);
       return callback(new Error(`CORS not allowed for origin: ${origin}`));
     },
     credentials: true,
