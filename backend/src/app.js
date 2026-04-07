@@ -7,18 +7,25 @@ import adminRouter from "./routes/admin.routes.js";
 
 const app = express();
 
-// Allowed frontend URLs
 const allowedOrigins = [
   "http://localhost:5173",
   process.env.CORS_ORIGIN,
 ].filter(Boolean);
 
-// CORS middleware
 app.use(
   cors({
-    origin: allowedOrigins,
+    origin: function (origin, callback) {
+      // allow requests with no origin (postman/mobile apps/etc.)
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error(`CORS not allowed for origin: ${origin}`));
+    },
     credentials: true,
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    methods: ["GET", "POST", "PATCH", "DELETE", "PUT", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
@@ -27,7 +34,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// Health check route
 app.get("/", (req, res) => {
   res.send("TaskFlow API is running...");
 });
