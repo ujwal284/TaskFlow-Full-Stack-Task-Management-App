@@ -5,16 +5,11 @@ import TaskForm from "../components/TaskForm";
 import TaskList from "../components/TaskList";
 import TaskFilters from "../components/TaskFilters";
 import api from "../services/api";
+import { getStoredUser } from "../utils/auth";
 
 function Dashboard() {
-  let user = null;
-
-try {
-  const storedUser = localStorage.getItem("user");
-  user = storedUser && storedUser !== "undefined" ? JSON.parse(storedUser) : null;
-} catch (error) {
-  user = null;
-}
+ 
+  const user = getStoredUser();
 
   const [tasks, setTasks] = useState([]);
   const [stats, setStats] = useState({});

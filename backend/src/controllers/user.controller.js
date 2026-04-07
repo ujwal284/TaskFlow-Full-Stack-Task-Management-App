@@ -5,7 +5,6 @@ const registerUser = async (req, res) => {
   try {
     const { fullName, email, password } = req.body;
 
-    // Validation
     if (!fullName || !email || !password) {
       return res.status(400).json({
         success: false,
@@ -13,7 +12,6 @@ const registerUser = async (req, res) => {
       });
     }
 
-    // Check existing user
     const existingUser = await User.findOne({ email });
 
     if (existingUser) {
@@ -23,23 +21,19 @@ const registerUser = async (req, res) => {
       });
     }
 
-    // Create user
-    const createdUser = await User.create({
+    const user = await User.create({
       fullName,
       email,
       password,
     });
 
+    const createdUser = await User.findById(user._id).select("-password");
+
     return res.status(201).json({
       success: true,
       message: "User registered successfully",
       data: {
-        user: {
-          _id: createdUser._id,
-          fullName: createdUser.fullName,
-          email: createdUser.email,
-          role: createdUser.role,
-        },
+        user: createdUser,
       },
     });
   } catch (error) {
@@ -55,7 +49,6 @@ const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Validation
     if (!email || !password) {
       return res.status(400).json({
         success: false,
@@ -63,7 +56,6 @@ const loginUser = async (req, res) => {
       });
     }
 
-    // Check user
     const user = await User.findOne({ email });
 
     if (!user) {
@@ -73,7 +65,6 @@ const loginUser = async (req, res) => {
       });
     }
 
-    // Check password
     const isPasswordValid = await user.isPasswordCorrect(password);
 
     if (!isPasswordValid) {
@@ -83,14 +74,14 @@ const loginUser = async (req, res) => {
       });
     }
 
-    // Generate token
     const accessToken = user.generateAccessToken();
 
     const loggedInUser = await User.findById(user._id).select("-password");
 
     const options = {
       httpOnly: true,
-      secure: false,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
     };
 
     return res
@@ -101,12 +92,7 @@ const loginUser = async (req, res) => {
         message: "Login successful",
         data: {
           accessToken,
-          user: {
-            _id: loggedInUser._id,
-            fullName: loggedInUser.fullName,
-            email: loggedInUser.email,
-            role: loggedInUser.role,
-          },
+          user: loggedInUser,
         },
       });
   } catch (error) {
@@ -119,10 +105,19 @@ const loginUser = async (req, res) => {
 
 // Get current user
 const getCurrentUser = async (req, res) => {
-  return res.status(200).json({
-    success: true,
-    user: req.user,
-  });
+  try {
+    return res.status(200).json({
+      success: true,
+      data: {
+        user: req.user,
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
 };
 
 export { registerUser, loginUser, getCurrentUser };

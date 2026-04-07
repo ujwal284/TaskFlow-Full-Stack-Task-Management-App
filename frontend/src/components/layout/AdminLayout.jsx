@@ -2,25 +2,16 @@ import { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import ConfirmModal from "../ConfirmModal";
+import { clearAuth, getStoredUser } from "../../utils/auth";
 
 function AdminLayout({ children }) {
   const navigate = useNavigate();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
-  let user = null;
-  try {
-    const storedUser = localStorage.getItem("user");
-    user =
-      storedUser && storedUser !== "undefined"
-        ? JSON.parse(storedUser)
-        : null;
-  } catch (error) {
-    user = null;
-  }
+  const user = getStoredUser();
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    clearAuth();
     toast.success("Logged out successfully!");
     navigate("/");
   };
@@ -43,7 +34,9 @@ function AdminLayout({ children }) {
 
         <div className="p-6 border-b border-slate-800">
           <p className="text-sm text-slate-400">Logged in as</p>
-          <h2 className="text-lg font-semibold mt-1">{user?.fullName || "Admin"}</h2>
+          <h2 className="text-lg font-semibold mt-1">
+            {user?.fullName || "Admin"}
+          </h2>
           <p className="text-sm text-slate-400">{user?.email || ""}</p>
           <span className="inline-block mt-3 px-3 py-1 rounded-full text-xs font-medium bg-purple-600/20 text-purple-300 border border-purple-500/20">
             {user?.role || "admin"}

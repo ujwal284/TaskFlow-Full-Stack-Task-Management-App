@@ -1,21 +1,9 @@
 import { Navigate } from "react-router-dom";
+import { getStoredUser, getStoredToken } from "../../utils/auth";
 
 function ProtectedAdminRoute({ children }) {
-  const token = localStorage.getItem("token");
-
-  let user = null;
-
-  try {
-    const storedUser = localStorage.getItem("user");
-    user =
-      storedUser && storedUser !== "undefined"
-        ? JSON.parse(storedUser)
-        : null;
-  } catch (error) {
-    console.error("Invalid admin user in localStorage:", error);
-    localStorage.removeItem("user");
-    user = null;
-  }
+  const token = getStoredToken();
+  const user = getStoredUser();
 
   if (!token || !user) {
     return <Navigate to="/" replace />;

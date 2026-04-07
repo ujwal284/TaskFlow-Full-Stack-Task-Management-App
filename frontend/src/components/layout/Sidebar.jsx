@@ -1,22 +1,18 @@
 import { useState } from "react";
 import { useNavigate, NavLink } from "react-router-dom";
+import toast from "react-hot-toast";
 import Modal from "../ui/Modal";
+import { clearAuth, getStoredUser } from "../../utils/auth";
 
 function Sidebar() {
   const navigate = useNavigate();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
-  let user = null;
-  try {
-    const storedUser = localStorage.getItem("user");
-    user = storedUser && storedUser !== "undefined" ? JSON.parse(storedUser) : null;
-  } catch (error) {
-    user = null;
-  }
+  const user = getStoredUser();
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    clearAuth();
+    toast.success("Logged out successfully!");
     navigate("/");
   };
 
@@ -33,7 +29,6 @@ function Sidebar() {
         <h1 className="text-2xl font-bold mb-10 tracking-wide">TaskFlow</h1>
 
         <nav className="flex flex-col gap-3">
-          {/* ✅ User Routes — each points to its own path */}
           <NavLink to="/dashboard" end className={navLinkClass}>
             Dashboard
           </NavLink>
@@ -50,7 +45,6 @@ function Sidebar() {
             Settings
           </NavLink>
 
-          {/* ✅ Admin Routes — only shown to admins */}
           {user?.role === "admin" && (
             <>
               <div className="mt-6 mb-2 text-xs uppercase tracking-wider text-zinc-500 px-2">

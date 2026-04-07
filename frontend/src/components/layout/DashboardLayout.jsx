@@ -2,25 +2,17 @@ import { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import ConfirmModal from "../ConfirmModal";
+import { clearAuth, getStoredUser } from "../../utils/auth";
 
 function DashboardLayout({ children }) {
   const navigate = useNavigate();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
-  let user = null;
-  try {
-    const storedUser = localStorage.getItem("user");
-    user =
-      storedUser && storedUser !== "undefined"
-        ? JSON.parse(storedUser)
-        : null;
-  } catch (error) {
-    user = null;
-  }
+  // Use only the helper function — no duplicate variable
+  const user = getStoredUser();
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    clearAuth();
     toast.success("Logged out successfully!");
     navigate("/");
   };

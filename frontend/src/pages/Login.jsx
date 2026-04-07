@@ -11,6 +11,8 @@ function Login() {
     password: "",
   });
 
+  const [loading, setLoading] = useState(false);
+
   const handleChange = (e) => {
     setFormData((prev) => ({
       ...prev,
@@ -18,28 +20,30 @@ function Login() {
     }));
   };
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-  try {
-    const response = await api.post("/users/login", formData);
+    try {
+      setLoading(true);
 
-    localStorage.setItem("token", response.data.data.accessToken);
-    localStorage.setItem("user", JSON.stringify(response.data.data.user));
+      const response = await api.post("/users/login", formData);
 
-    toast.success("Login successful!");
+      localStorage.setItem("token", response.data.data.accessToken);
+      localStorage.setItem("user", JSON.stringify(response.data.data.user));
 
-    const loggedInUser = response.data.data.user;
+      toast.success("Login successful!");
 
-    if (loggedInUser.role === "admin") {
-      navigate("/admin/dashboard");
-    } else {
-      navigate("/dashboard");
+      if (response.data.data.user.role === "admin") {
+        navigate("/admin/dashboard");
+      } else {
+        navigate("/dashboard");
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Login failed");
+    } finally {
+      setLoading(false);
     }
-  } catch (error) {
-    toast.error(error.response?.data?.message || "Login failed");
-  }
-};
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-100 px-4">
@@ -76,9 +80,10 @@ const handleSubmit = async (e) => {
 
         <button
           type="submit"
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-semibold transition"
+          disabled={loading}
+          className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-70 text-white py-3 rounded-xl font-semibold transition"
         >
-          Login
+          {loading ? "Logging in..." : "Login"}
         </button>
 
         <p className="text-center text-slate-600 mt-6">
